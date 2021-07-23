@@ -15,14 +15,15 @@ def main():
 
   obd.logger.setLevel(obd.logging.DEBUG)
 
-  connection = obd.OBD() # auto-connects to USB or RF port
+  connection = obd.OBD('\\.\\COM5') # auto-connects to USB or RF port
+  #connection = obd.OBD() # auto-connects to USB or RF port
   print("Return from obd.OBD")
-  cmd = obd.commands.SPEED # select an OBD command (sensor)
+  cmd = obd.commands.RPM # select an OBD command (sensor)
 
   response = connection.query(cmd) # send the command, and parse the response
 
   print(response.value) # returns unit-bearing values thanks to Pint
-  print(response.value.to("mph")) # user-friendly unit conversions
+  #print(response.value.to("mph")) # user-friendly unit conversions
 
 
 if (__name__ == "__main__"):
