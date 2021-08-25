@@ -20,22 +20,8 @@ measurement_cmds = {
 }
 
 # Values to display in telemetry
-speed_val = 0
-rpm_val = 0
-
-# Methods to update telemetry values
-
-
-def update_speed():
-    cmd = obd.commands.SPEED  # select an OBD command (sensor)
-    response = connection.query(cmd)  # send the command, parse the response
-    speed_val = response.value
-
-
-def update_rpm():
-    cmd = obd.commands.RPM  # select an OBD command (sensor)
-    response = connection.query(cmd)  # send the command, parse the response
-    rpm_val = response.value
+speed_val = "0 mph"
+rpm_val = "0 rpm"
 
 
 # Configure weights on dimmensions for each cell used when resisigning window
@@ -96,4 +82,35 @@ width=25, height=2 )
 val_label0.pack(fill=tk.BOTH, expand=1, side=tk.TOP)
 val_label1.pack(fill=tk.BOTH, expand=1, side=tk.TOP)
 
+# Methods to update telemetry values
+
+
+def update_speed():
+    global speed_val
+    cmd = obd.commands.SPEED  # select an OBD command (sensor)
+    response = connection.query(cmd)  # send the command, parse the response
+    if not response.is_null():
+        speed_val = str(response.value.to('mph').magnitude) + " mph"
+
+    val_label0.config(text=str(speed_val))  # Update label with next text.
+
+    # calls update_label function again after 1 second. (1000 milliseconds.)
+    window.after(1000, update_speed)
+
+
+def update_rpm():
+    global rpm_val
+    cmd = obd.commands.RPM  # select an OBD command (sensor)
+    response = connection.query(cmd)  # send the command, parse the response
+    if not response.is_null():
+        rpm_val = str(response.value.magnitude) + " rpm"
+
+    val_label1.config(text=str(rpm_val))  # Update label with next text.
+
+    # calls update_label function again after 1 second. (1000 milliseconds.)
+    window.after(1000, update_rpm)
+
+
+update_speed()
+update_rpm()
 window.mainloop()
