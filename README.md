@@ -82,4 +82,4 @@ laptop. Turn the car on.
 
 Run the program using
 
-`python testing.py`
+`python obd_reader.py`
