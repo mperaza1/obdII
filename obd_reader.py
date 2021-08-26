@@ -10,6 +10,7 @@ window.title("OBDII Reader")
 window.configure(bg="Gray")
 
 # c = obd.commands['RPM']
+# Dictionary of "Command Label String" to "OBD library command string"
 measurement_cmds = {
     "Speed": "SPEED",
     "RPM": "RPM",
@@ -22,12 +23,17 @@ measurement_cmds = {
 # Values to display in telemetry
 speed_val = "0 mph"
 rpm_val = "0 rpm"
+coolant_val = "0 C"
+oil_val = "0 C"
+throttle_val = "0 degrees"
+run_time_val = "0 minutes"
 
 
 # Configure weights on dimmensions for each cell used when resisigning window
 window.rowconfigure(0, weight=1, minsize=75)
 window.rowconfigure(1, weight=1, minsize=75)
 window.rowconfigure(2, weight=1, minsize=75)
+window.rowconfigure(3, weight=1, minsize=75)
 window.columnconfigure(0, weight=1, minsize=50)
 window.columnconfigure(1, weight=1, minsize=50)
 
@@ -39,7 +45,10 @@ frame3 = tk.Frame(master=window, relief=tk.RIDGE, borderwidth=2,)
 frame4 = tk.Frame(master=window, relief=tk.RIDGE, borderwidth=2,)
 frame5 = tk.Frame(master=window, relief=tk.RIDGE, borderwidth=2,)
 
-# Pack the frames into a grid of 3 rows 2 columns
+# Create 1 frame for custom command input
+frame6 = tk.Frame(master=window, relief=tk.RIDGE, borderwidth=2,)
+
+# Pack the frames into a grid of 4 rows 2 columns
 frame0.grid(row=0, column=0, padx=1, pady=1, sticky="nsew")
 frame1.grid(row=0, column=1, padx=1, pady=1, sticky="nsew")
 frame2.grid(row=1, column=0, padx=1, pady=1, sticky="nsew")
@@ -47,22 +56,27 @@ frame3.grid(row=1, column=1, padx=1, pady=1, sticky="nsew")
 frame4.grid(row=2, column=0, padx=1, pady=1, sticky="nsew")
 frame5.grid(row=2, column=1, padx=1, pady=1, sticky="nsew")
 
+# Pack Custom Command frame to span bottom 2 columns
+frame6.grid(row=3, column=0, padx=1, pady=1, sticky="nsew", columnspan=2)
+
 keys = list(measurement_cmds.keys())
 assert len(keys) == 6
 
 # Create labels for each telemetry frame
 label0 = tk.Label(master=frame0, text=keys[0], fg="white", bg="DimGray",
-width=25, height=5 )
+        width=25, height=5 )
 label1 = tk.Label(master=frame1, text=keys[1], fg="white", bg="DimGray",
-width=25, height=5 )
+        width=25, height=5 )
 label2 = tk.Label(master=frame2, text=keys[2], fg="white", bg="DimGray",
-width=25, height=5 )
+        width=25, height=5 )
 label3 = tk.Label(master=frame3, text=keys[3], fg="white", bg="DimGray",
-width=25, height=5 )
+        width=25, height=5 )
 label4 = tk.Label(master=frame4, text=keys[4], fg="white", bg="DimGray",
-width=25, height=5 )
+        width=25, height=5 )
 label5 = tk.Label(master=frame5, text=keys[5], fg="white", bg="DimGray",
-width=25, height=5 )
+        width=25, height=5 )
+label6 = tk.Label(master=frame6, text="Custom Command", fg="white", bg="DimGray",
+        width=50, height=5 )
 
 # Add label to the top of each frame
 label0.pack(fill=tk.BOTH, expand=1, side=tk.TOP)
@@ -71,16 +85,30 @@ label2.pack(fill=tk.BOTH, expand=1, side=tk.TOP)
 label3.pack(fill=tk.BOTH, expand=1, side=tk.TOP)
 label4.pack(fill=tk.BOTH, expand=1, side=tk.TOP)
 label5.pack(fill=tk.BOTH, expand=1, side=tk.TOP)
+label6.pack(fill=tk.BOTH, expand=1, side=tk.TOP)
 
 # Create label for values of each cell
 val_label0 = tk.Label(master=frame0, text=speed_val, fg="white", bg="DimGray",
-width=25, height=2 )
+            width=25, height=2 )
 val_label1 = tk.Label(master=frame1, text=rpm_val, fg="white", bg="DimGray",
-width=25, height=2 )
+            width=25, height=2 )
+val_label2 = tk.Label(master=frame2, text=coolant_val, fg="white", bg="DimGray",
+            width=25, height=2 )
+val_label3 = tk.Label(master=frame3, text=oil_val, fg="white", bg="DimGray",
+            width=25, height=2 )
+val_label4 = tk.Label(master=frame4, text=throttle_val, fg="white", bg="DimGray",
+            width=25, height=2 )
+val_label5 = tk.Label(master=frame5, text=run_time_val, fg="white", bg="DimGray",
+            width=25, height=2 )
 
 # Add labels with the values of each cell
 val_label0.pack(fill=tk.BOTH, expand=1, side=tk.TOP)
 val_label1.pack(fill=tk.BOTH, expand=1, side=tk.TOP)
+val_label2.pack(fill=tk.BOTH, expand=1, side=tk.TOP)
+val_label3.pack(fill=tk.BOTH, expand=1, side=tk.TOP)
+val_label4.pack(fill=tk.BOTH, expand=1, side=tk.TOP)
+val_label5.pack(fill=tk.BOTH, expand=1, side=tk.TOP)
+
 
 # Methods to update telemetry values
 
@@ -90,11 +118,11 @@ def update_speed():
     cmd = obd.commands.SPEED  # select an OBD command (sensor)
     response = connection.query(cmd)  # send the command, parse the response
     if not response.is_null():
-        speed_val = str(response.value.to('mph').magnitude) + " mph"
+        speed_val = str(int(response.value.to('mph').magnitude)) + " mph"
 
     val_label0.config(text=str(speed_val))  # Update label with next text.
 
-    # calls update_label function again after 1 second. (1000 milliseconds.)
+    # calls update function again after 1 second. (1000 milliseconds.)
     window.after(1000, update_speed)
 
 
@@ -103,14 +131,71 @@ def update_rpm():
     cmd = obd.commands.RPM  # select an OBD command (sensor)
     response = connection.query(cmd)  # send the command, parse the response
     if not response.is_null():
-        rpm_val = str(response.value.magnitude) + " rpm"
+        rpm_val = str(int(response.value.magnitude)) + " rpm"
 
     val_label1.config(text=str(rpm_val))  # Update label with next text.
 
-    # calls update_label function again after 1 second. (1000 milliseconds.)
+    # calls update function again after 1 second. (1000 milliseconds.)
     window.after(1000, update_rpm)
 
 
+def update_coolant_temp():
+    global coolant_val
+    cmd = obd.commands.COOLANT_TEMP  # select an OBD command (sensor)
+    response = connection.query(cmd)  # send the command, parse the response
+    if not response.is_null():
+        coolant_val = str(int(response.value.magnitude)) + " C"
+
+    val_label2.config(text=str(coolant_val))  # Update label with next text.
+
+    # calls update function again after 1 second. (1000 milliseconds.)
+    window.after(1000, update_coolant_temp)
+
+
+def update_oil_temp():
+    global oil_val
+    cmd = obd.commands.OIL_TEMP  # select an OBD command (sensor)
+    response = connection.query(cmd)  # send the command, parse the response
+    if not response.is_null():
+        oil_val = str(int(response.value.magnitude)) + " C"
+
+    val_label3.config(text=str(oil_val))  # Update label with next text.
+
+    # calls update function again after 1 second. (1000 milliseconds.)
+    window.after(1000, update_oil_temp)
+
+
+def update_throttle_pos():
+    global throttle_val
+    cmd = obd.commands.RELATIVE_THROTTLE_POS  # select an OBD command (sensor)
+    response = connection.query(cmd)  # send the command, parse the response
+    if not response.is_null():
+        throttle_val = str(int(response.value.magnitude)) + " percent"
+
+    val_label4.config(text=str(throttle_val))  # Update label with next text.
+
+    # calls update function again after 1 second. (1000 milliseconds.)
+    window.after(1000, update_throttle_pos)
+
+
+def update_run_time():
+    global run_time_val
+    cmd = obd.commands.RUN_TIME  # select an OBD command (sensor)
+    response = connection.query(cmd)  # send the command, parse the response
+    if not response.is_null():
+        run_time_val = str(int(response.value.magnitude)) + " minutes"
+
+    val_label5.config(text=str(run_time_val))  # Update label with next text.
+
+    # calls update function again after 1 second. (1000 milliseconds.)
+    window.after(1000, update_run_time)
+
+# Start Updating each value in real time
 update_speed()
 update_rpm()
+update_coolant_temp()
+update_oil_temp()
+update_throttle_pos()
+update_run_time()
+
 window.mainloop()
