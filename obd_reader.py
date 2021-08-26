@@ -203,15 +203,15 @@ label5 = tk.Label(master=frame5, text=keys[5], fg="white", bg="DimGray",
         width=25, height=5 )
 
 # Label for custom command
-label6 = tk.Label(master=frame6, text="Custom Command:", fg="white", bg="DimGray",
+label6 = tk.Label(master=frame6, text="Custom Command Entry", fg="white", bg="DimGray",
         width=50, height=3 )
 # StringVar object to store user command
 user_command6 = tk.StringVar(frame6)
 # Text entry widget for user command
-entry6 = tk.Entry(master=frame6, textvariable=user_command6, fg="white",
-        bg="Gray", width=25,)
+entry6 = tk.Entry(master=frame6, textvariable=user_command6, fg="black",
+        bg="LightGrey", width=25, relief=tk.GROOVE)
 # Button Widget to set user_command
-submit_button6 = tk.Button(master=frame6, text='Submit', command=set_user_command,
+submit_button6 = tk.Button(master=frame6, text='Submit Command', command=set_user_command,
                 fg="white", bg="SlateGray", width=25, height=1 )
 
 
