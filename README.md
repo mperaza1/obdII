@@ -67,7 +67,7 @@ In the Hardware window, the COM port will be listed under "Name".
 Take note of the COM port number as we will use this in the code.
 
 Edit the following line with the right COM port number:  
-(In this case it is 5)
+(In this example it is 5)
 
 `connection = obd.OBD('\\.\\COM5')`
 
