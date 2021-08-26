@@ -15,7 +15,7 @@ measurement_cmds = {
     "Speed": "SPEED",
     "RPM": "RPM",
     "Coolant Temp": "COOLANT_TEMP",
-    "Oil Temp": "OIL_TEMP",
+    "Intake Temp": "INTAKE_TEMP",
     "Throttle Position": "THROTTLE_POS",
     "Run Time": "RUN_TIME_MIL",
 }
@@ -24,7 +24,7 @@ measurement_cmds = {
 speed_val = "0 mph"
 rpm_val = "0 rpm"
 coolant_val = "0 C"
-oil_val = "0 C"
+intake_val = "0 C"
 throttle_val = "0 degrees"
 run_time_val = "0 minutes"
 
@@ -94,7 +94,7 @@ val_label1 = tk.Label(master=frame1, text=rpm_val, fg="white", bg="DimGray",
             width=25, height=2 )
 val_label2 = tk.Label(master=frame2, text=coolant_val, fg="white", bg="DimGray",
             width=25, height=2 )
-val_label3 = tk.Label(master=frame3, text=oil_val, fg="white", bg="DimGray",
+val_label3 = tk.Label(master=frame3, text=intake_val, fg="white", bg="DimGray",
             width=25, height=2 )
 val_label4 = tk.Label(master=frame4, text=throttle_val, fg="white", bg="DimGray",
             width=25, height=2 )
@@ -152,22 +152,22 @@ def update_coolant_temp():
     window.after(1000, update_coolant_temp)
 
 
-def update_oil_temp():
-    global oil_val
-    cmd = obd.commands.OIL_TEMP  # select an OBD command (sensor)
+def update_intake_temp():
+    global intake_val
+    cmd = obd.commands.INTAKE_TEMP  # select an OBD command (sensor)
     response = connection.query(cmd)  # send the command, parse the response
     if not response.is_null():
-        oil_val = str(int(response.value.magnitude)) + " C"
+        intake_val = str(int(response.value.magnitude)) + " C"
 
-    val_label3.config(text=str(oil_val))  # Update label with next text.
+    val_label3.config(text=str(intake_val))  # Update label with next text.
 
     # calls update function again after 1 second. (1000 milliseconds.)
-    window.after(1000, update_oil_temp)
+    window.after(1000, update_intake_temp)
 
 
 def update_throttle_pos():
     global throttle_val
-    cmd = obd.commands.RELATIVE_THROTTLE_POS  # select an OBD command (sensor)
+    cmd = obd.commands.THROTTLE_ACTUATOR  # select an OBD command (sensor)
     response = connection.query(cmd)  # send the command, parse the response
     if not response.is_null():
         throttle_val = str(int(response.value.magnitude)) + " percent"
@@ -183,7 +183,7 @@ def update_run_time():
     cmd = obd.commands.RUN_TIME  # select an OBD command (sensor)
     response = connection.query(cmd)  # send the command, parse the response
     if not response.is_null():
-        run_time_val = str(int(response.value.magnitude)) + " minutes"
+        run_time_val = str(int(response.value.magnitude)) + " seconds"
 
     val_label5.config(text=str(run_time_val))  # Update label with next text.
 
@@ -194,7 +194,7 @@ def update_run_time():
 update_speed()
 update_rpm()
 update_coolant_temp()
-update_oil_temp()
+update_intake_temp()
 update_throttle_pos()
 update_run_time()
 
